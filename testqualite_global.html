@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الاختبار الشامل: المحور الأول (جودة الإنتاج والحفظ)</title>
+    <style>
+        :root { --primary-color: #2c5e3b; --secondary-color: #558b2f; --accent-color: #f4f6f0; --text-color: #333333; --card-bg: #ffffff; --border-radius: 12px; }
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: var(--accent-color); color: var(--text-color); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 750px; background: var(--card-bg); padding: 30px; border-radius: var(--border-radius); box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        header { text-align: center; border-bottom: 2px solid #e0e0e0; padding-bottom: 20px; margin-bottom: 25px; }
+        .logo-container img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--secondary-color); margin-bottom: 10px; }
+        h1 { color: var(--primary-color); font-size: 1.25rem; margin: 0 0 8px 0; }
+        p { color: #666; font-size: 0.92rem; margin: 0; }
+        .question-card { margin-bottom: 20px; display: none; }
+        .question-card.active { display: block; }
+        .question-title { font-size: 1.05rem; font-weight: bold; color: var(--primary-color); margin-bottom: 15px; line-height: 1.5; }
+        .options-list { display: flex; flex-direction: column; gap: 10px; }
+        .option-item { background: #f9fbf8; border: 2px solid #e2e8f0; padding: 12px 15px; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; }
+        .option-item:hover { border-color: var(--secondary-color); background: #f1f8e9; }
+        .option-item.selected { border-color: var(--primary-color); background: #e8f5e9; font-weight: bold; }
+        .btn-container { display: flex; justify-content: space-between; margin-top: 25px; border-top: 1px solid #e0e0e0; padding-top: 20px; }
+        button.action-btn, a.action-btn { background-color: var(--primary-color); color: white; border: none; padding: 12px 20px; font-size: 0.95rem; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; text-align: center; transition: background 0.2s; font-weight: bold; }
+        button.action-btn:hover, a.action-btn:hover { background-color: #1e3f27; }
+        .result-container { text-align: center; display: none; }
+        .score-box { font-size: 2.5rem; font-weight: bold; color: var(--secondary-color); margin: 15px 0; direction: ltr; }
+        .feedback-msg { font-size: 1rem; margin-bottom: 20px; color: #444; line-height: 1.6; background: #f4f6f0; padding: 15px; border-radius: 8px; text-align: right; }
+        .review-box { text-align: right; margin-top: 15px; max-height: 300px; overflow-y: auto; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; }
+        .review-item { margin-bottom: 12px; padding: 10px; border-radius: 6px; border-right: 4px solid #ccc; background: #fff; font-size: 0.9rem; }
+        .review-item.correct-ans { border-right-color: #558b2f; background: #f1f8e9; }
+        .review-item.wrong-ans { border-right-color: #c62828; background: #ffebee; }
+        .result-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        .row-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .row-btns .action-btn { flex: 1; min-width: 140px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="logo-container"><img src="logo100.jpg" alt="شعار مجموعة التكوين والتأطير" onerror="this.src='https://i.ibb.co/6P7q9z0/logo.jpg'"></div>
+        <h1>🫒 الاختبار الشامل: المحور الأول (جودة الإنتاج والحفظ)</h1>
+        <p>مجموعة التكوين والتأطير — تقييم جميع مراحل المسار</p>
+    </header>
+    <div id="quiz-form"></div>
+    <div class="btn-container" id="nav-buttons">
+        <button class="action-btn" id="prev-btn" onclick="prevQuestion()" style="display: none;">السابق</button>
+        <div style="flex-grow: 1;"></div>
+        <button class="action-btn" id="next-btn" onclick="nextQuestion()">التالي</button>
+    </div>
+    <div class="result-container" id="result-screen">
+        <h2>نتيجة التقييم الشامل 🏆</h2>
+        <div class="score-box" id="score-display">0 / 6</div>
+        <div class="feedback-msg" id="feedback-text"></div>
+        <div class="result-buttons">
+            <a href="index.html" class="action-btn" style="background-color: #1e3f27;">🏠 العودة إلى الصفحة الرئيسية للمنصة</a>
+            <div class="row-btns">
+                <a href="testinssa_global.html" class="action-btn" style="background-color: #d97706;">الاختبار الشامل لأونسا ➔</a>
+                <button class="action-btn" style="background-color: #558b2f;" onclick="showReview()">مراجعة الأخطاء 📖</button>
+                <button class="action-btn" style="background-color: #444;" onclick="restartQuiz()">إعادة الاختبار 🔄</button>
+            </div>
+        </div>
+        <div id="review-section" style="display: none;" class="review-box"></div>
+    </div>
+</div>
+
+<script>
+    // بنك الأسئلة الشامل للمحور الأول (يغطي جميع الحلقات بوزع عشوائي للإجابات)
+    const questions = [
+        { 
+            title: "1. أثناء استقبال شحنة زيتون تبدو نظيفة نسبياً ولا تحمل أتربة واضحة، ما هو التصرف التقني السليم بخصوص الغسل؟", 
+            options: [
+                "يُفضل تخطي مرحلة الغسل بالماء لتجنب رفع رطوبة الثمار وخلق بيئة مائية غير ضرورية مادامت نظيفة.", 
+                "يجب غسلها دائماً وبشكل إجباري وأوتوماتيكي لضمان إزالة الأتربة الدقيقة.", 
+                "غسلها بماء دافئ لزيادة ليونة الثمار قبل الطحن مباشرة."
+            ], 
+            correct: 0 
+        },
+        { 
+            title: "2. ما هو التأثير السلبي المباشر لترك الأوراق والأغصان بكميات كبيرة تختلط بالزيتون أثناء الطحن؟", 
+            options: [
+                "تضفي طعماً مراً لاذعاً وغير مرغوب (عصارة الأوراق والكلوروفيل) وتؤثر سلباً على التوازن الحسي للزيت.", 
+                "تساهم في زيادة كمية الزيت المستخرجة بنسبة كبيرة.", 
+                "تمنح الزيت نكهة عشبية مستحبة جداً في كل الظروف."
+            ], 
+            correct: 0 
+        },
+        { 
+            title: "3. ما هو الهدف الأساسي من عملية العجن (Malaxage) لعجينة الزيتون بعد الطحن؟", 
+            options: [
+                "تسخين العجينة لأعلى درجات الحرارة لتعقيمها السريع.", 
+                "تجميع قطرات الزيت الصغيرة المشتتة داخل العجينة لدمجها وتسهيل فصلها لاحقاً.", 
+                "طحن النوى بشكل أكثر دقة داخل الحوض."
+            ], 
+            correct: 1 
+        },
+        { 
+            title: "4. رفع حرارة العجن ومدته بشكل مفرط بهدف الحصول على مردودية أعلى يسبب:", 
+            options: [
+                "تحسن طعم الزيت وارتفاع مستويات البوليفينول.", 
+                "أكسدة جزئية، تطاير النكهات العطرية، وانخفاض جودة الزيت مقابل فائدة معدومة في الاستخلاص.", 
+                "تبريد آلة الفصل تلقائياً وحماية الزيت من التلف."
+            ], 
+            correct: 1 
+        },
+        { 
+            title: "5. أين يذهب الفاقد الحقيقي الذي قد تخسره المعصرة دون انتباه أثناء عملية الفصل؟", 
+            options: [
+                "يتبخر كلياً في الهواء أثناء العجن.", 
+                "يضيع ويهدر مع المرجان والمخلفات الصلبة نتيجة سوء ضبط الحرارة والماء.", 
+                "يرجع تلقائياً إلى خزان الزيت الخام بالمعصرة."
+            ], 
+            correct: 1 
+        },
+        { 
+            title: "6. ما هو الخطر المباشر لبقاء الماء والرواسب مختلطة بزيت الزيتون لفترة طويلة داخل الخزان بعد الاستخراج؟", 
+            options: [
+                "تؤدي إلى تخمر لاهوائي وتخريب جودة الزيت بظهور عيوب حسية خطيرة (عيب الرواسب والمرجان).", 
+                "تزيد من وزن الزيت وتمنحه لوناً أخضر داكناً ومطلوباً.", 
+                "تساهم في رفع نسبة الحموضة فقط دون التأثير على الطعم."
+            ], 
+            correct: 0 
+        }
+    ];
+
+    let currentQuestion = 0; let userAnswers = new Array(questions.length).fill(null);
+    const quizForm = document.getElementById('quiz-form'); const navButtons = document.getElementById('nav-buttons'); const prevBtn = document.getElementById('prev-btn'); const nextBtn = document.getElementById('next-btn'); const resultScreen = document.getElementById('result-screen'); const scoreDisplay = document.getElementById('score-display'); const feedbackText = document.getElementById('feedback-text'); const reviewSection = document.getElementById('review-section');
+
+    function renderQuestion() {
+        quizForm.innerHTML = ''; const q = questions[currentQuestion];
+        let html = `<div class="question-card active"><div class="question-title">${q.title}</div><div class="options-list">`;
+        q.options.forEach((opt, idx) => {
+            const isSelected = userAnswers[currentQuestion] === idx ? 'selected' : '';
+            html += `<div class="option-item ${isSelected}" onclick="selectOption(${idx})">${opt}</div>`;
+        });
+        html += `</div></div>`; quizForm.innerHTML = html;
+        prevBtn.style.display = currentQuestion === 0 ? 'none' : 'block';
+        nextBtn.innerText = currentQuestion === questions.length - 1 ? 'إرسال وعرض النتيجة' : 'التالي';
+    }
+
+    function selectOption(idx) { userAnswers[currentQuestion] = idx; renderQuestion(); }
+    function nextQuestion() { if (userAnswers[currentQuestion] === null) { alert('الرجاء اختيار إجابة أولاً.'); return; } if (currentQuestion < questions.length - 1) { currentQuestion++; renderQuestion(); } else { showResults(); } }
+    function prevQuestion() { if (currentQuestion > 0) { currentQuestion--; renderQuestion(); } }
+
+    function showResults() {
+        quizForm.style.display = 'none'; navButtons.style.display = 'none'; resultScreen.style.display = 'block'; reviewSection.style.display = 'none';
+        let score = 0; userAnswers.forEach((ans, idx) => { if (ans === questions[idx].correct) score++; });
+        scoreDisplay.innerText = `${score} / ${questions.length}`;
+        
+        if (score === 6) { feedbackText.innerHTML = `<strong>🌟 أداء احترافي بامتياز (6/6)!</strong> استيعاب تام لكل حلقات المحور الأول من الغسل وحتى الحفظ والتخزين.`; } 
+        else if (score >= 4) { feedbackText.innerHTML = `<strong>👏 أداء مميز (${score}/6)!</strong> إدراك قوي لمسار الإنتاج مع بعض الهفوات البسيطة.`; } 
+        else if (score >= 2) { feedbackText.innerHTML = `<strong>⚠️ تذبذب تقني خطير (${score}/6):</strong> لديك قصور في ربط مراحل الاستخراج بعضها ببعض (عجن، فصل، تخزين)، مما يهدد جودة الزيت.`; } 
+        else { feedbackText.innerHTML = `<strong>❌ إخفاق تسييري كامل (${score}/6):</strong> غياب تام لأبجديات الجودة في المعصرة. يجب إعادة دراسة جميع حلقات المحور الأول.`; }
+    }
+
+    function showReview() {
+        let reviewHtml = "<h3 style='color: var(--primary-color); text-align:center;'>مراجعة الأخطاء والتصحيح:</h3>";
+        questions.forEach((q, idx) => {
+            const userAns = userAnswers[idx]; const isCorrect = userAns === q.correct;
+            reviewHtml += `<div class="review-item ${isCorrect ? 'correct-ans' : 'wrong-ans'}">
+                <strong>س${idx+1}: ${q.title}</strong><br>
+                إجابتك: ${userAns !== null ? q.options[userAns] : 'لم تجب'} ${isCorrect ? '✓' : '✗'}<br>
+                ${!isCorrect ? `<span style="color:#2e7d32;font-weight:bold;">الصحيح: ${q.options[q.correct]}</span>` : ''}
+            </div>`;
+        });
+        reviewSection.innerHTML = reviewHtml; reviewSection.style.display = 'block';
+    }
+
+    function restartQuiz() { currentQuestion = 0; userAnswers.fill(null); resultScreen.style.display = 'none'; quizForm.style.display = 'block'; navButtons.style.display = 'flex'; renderQuestion(); }
+    renderQuestion();
+</script>
+</body>
+</html>
